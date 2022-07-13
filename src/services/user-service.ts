@@ -28,22 +28,6 @@ function addOne(user: IUser): Promise<void> {
     return userRepo.add(user);
 }
 
-
-/**
- * Update one user.
- * 
- * @param user 
- * @returns 
- */
-async function updateOne(user: IUser): Promise<void> {
-    const persists = await userRepo.persists(user.id);
-    if (!persists) {
-        throw new UserNotFoundError();
-    }
-    return userRepo.update(user);
-}
-
-
 /**
  * Delete a user by their id.
  * 
@@ -64,6 +48,5 @@ export default {
     getOne, 
     getAll,
     addOne,
-    updateOne,
     delete: deleteOne,
 } as const;
