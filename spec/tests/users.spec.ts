@@ -95,7 +95,7 @@ describe('user-router', () => {
     describe(`"POST:${addUsersPath}"`, () => {
 
         const callApi = (reqBody: TReqBody) => {
-            return agent.post(addUsersPath).type('form').send(reqBody);
+            return agent.post(addUsersPath).send(reqBody);
         };
         const userData = {
             'name': 'Gordan Freeman',
@@ -107,7 +107,7 @@ describe('user-router', () => {
             // Setup Spy
             spyOn(userRepo, 'add').and.returnValue(Promise.resolve());
             // Call API
-            agent.post(addUsersPath).type('form').send(userData)
+            agent.post(addUsersPath).send(userData)
                 .end((err: Error, res: Response) => {
                     pErr(err);
                     expect(res.status).toBe(CREATED);
