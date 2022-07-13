@@ -23,24 +23,7 @@ function getNew(name: string, email: string, dob: Date): IUser {
 }
 
 
-/**
- * Copy a user object.
- * 
- * @param user 
- * @returns 
- */
-function copy(user: IUser): IUser {
-    return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        dob: user.dob,
-    }
-}
-
-
 // Export default
 export default {
     new: getNew,
-    copy,
 }

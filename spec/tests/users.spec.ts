@@ -14,10 +14,9 @@ type TReqBody = string | object | undefined;
 
 describe('user-router', () => {
 
-    const usersPath = '/api/users';
+    const usersPath = '/users';
     const getUsersPath = `${usersPath}${userPaths.get}`;
     const addUsersPath = `${usersPath}${userPaths.add}`;
-    const updateUserPath = `${usersPath}${userPaths.update}`;
     const deleteUserPath = `${usersPath}${userPaths.delete}`;
 
     const { BAD_REQUEST, CREATED, OK } = StatusCodes;
@@ -39,9 +38,8 @@ describe('user-router', () => {
             request was successful.`, (done) => {
             // Setup spy
             const users = [
-                User.new('Sean Maxwell', 'sean.maxwell@gmail.com'),
-                User.new('John Smith', 'john.smith@gmail.com'),
-                User.new('Gordan Freeman', 'gordan.freeman@gmail.com'),
+                User.new('Sean Maxwell', 'sean.maxwell@gmail.com', new Date('2020-01-01')),
+                User.new('John Smith', 'john.smith@gmail.com', new Date('1999-01-01')),
             ];
             spyOn(userRepo, 'getAll').and.returnValue(Promise.resolve(users));
             // Call API
@@ -49,12 +47,24 @@ describe('user-router', () => {
                 .end((err: Error, res: Response) => {
                     pErr(err);
                     expect(res.status).toBe(OK);
-                    // Caste instance-objects to 'User' objects
                     const respUsers = res.body.users;
-                    const retUsers: IUser[] = respUsers.map((user: IUser) => {
-                        return User.copy(user);
-                    });
-                    expect(retUsers).toEqual(users);
+                    expect(respUsers).toEqual(
+                        [
+                            {
+                                id: -1,
+                                email: 'sean.maxwell@gmail.com',
+                                name: 'Sean Maxwell',
+                                dob: '2020-01-01T00:00:00.000Z',
+                            },
+                            {
+                                id: -1,
+                                email: 'john.smith@gmail.com',
+                                name: 'John Smith',
+                                dob: '1999-01-01T00:00:00.000Z',
+                            }
+
+                        ]
+                    );
                     expect(res.body.error).toBeUndefined();
                     done();
                 });
@@ -88,7 +98,9 @@ describe('user-router', () => {
             return agent.post(addUsersPath).type('form').send(reqBody);
         };
         const userData = {
-            user: User.new('Gordan Freeman', 'gordan.freeman@gmail.com'),
+            'name': 'Gordan Freeman',
+            'email': 'gordan.freeman@gmail.com',
+            'dob': new Date('2020-01-01'),
         };
 
         it(`should return a status code of "${CREATED}" if the request was successful.`, (done) => {
@@ -127,75 +139,6 @@ describe('user-router', () => {
                     pErr(err);
                     expect(res.status).toBe(BAD_REQUEST);
                     expect(res.body.error).toBe(errMsg);
-                    done();
-                });
-        });
-    });
-
-
-    /***********************************************************************************
-     *                                    Test Put
-     **********************************************************************************/
-
-    describe(`"PUT:${updateUserPath}"`, () => {
-
-        const callApi = (reqBody: TReqBody) => {
-            return agent.put(updateUserPath).type('form').send(reqBody);
-        };
-        const userData = {
-            user: User.new('Gordan Freeman', 'gordan.freeman@gmail.com'),
-        };
-
-        it(`should return a status code of "${OK}" if the request was successful.`, (done) => {
-            // Setup spy
-            spyOn(userRepo, 'persists').and.returnValue(Promise.resolve(true));
-            spyOn(userRepo, 'update').and.returnValue(Promise.resolve());
-            // Call Api
-            callApi(userData)
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(OK);
-                    expect(res.body.error).toBeUndefined();
-                    done();
-                });
-        });
-
-        it(`should return a JSON object with an error message of "${ParamMissingError.Msg}" and a
-            status code of "${BAD_REQUEST}" if the user param was missing.`, (done) => {
-            // Call api
-            callApi({})
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(BAD_REQUEST);
-                    expect(res.body.error).toBe(ParamMissingError.Msg);
-                    done();
-                });
-        });
-
-        it(`should return a JSON object with the error message of ${UserNotFoundError.Msg} 
-            and a status code of "${StatusCodes.NOT_FOUND}" if the id was not found.`, (done) => {
-            // Call api
-            callApi(userData)
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(UserNotFoundError.HttpStatus);
-                    expect(res.body.error).toBe(UserNotFoundError.Msg);
-                    done();
-                });
-        });
-
-        it(`should return a JSON object with an error message and a status code of "${BAD_REQUEST}"
-            if the request was unsuccessful.`, (done) => {
-            spyOn(userRepo, 'persists').and.returnValue(Promise.resolve(true));
-            // Setup spy
-            const updateErrMsg = 'Could not update user.';
-            spyOn(userRepo, 'update').and.throwError(updateErrMsg);
-            // Call API
-            callApi(userData)
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(BAD_REQUEST);
-                    expect(res.body.error).toBe(updateErrMsg);
                     done();
                 });
         });

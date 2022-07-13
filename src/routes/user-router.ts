@@ -38,6 +38,9 @@ router.get(p.get, async (_: Request, res: Response) => {
  */
 router.post(p.add, async (req: Request, res: Response) => {
     const user = req.body;
+    if (!('email' in user)) {
+        throw new ParamMissingError();
+    }
     await userService.addOne(user);
     return res.status(CREATED).end();
 });
